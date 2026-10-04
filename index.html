@@ -1,719 +1,544 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChromeOS — Ultra Realistic Desktop</title>
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Windows 11 Ultimate Desktop</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        cblue: '#1a73e8',
-                        cdark: '#202124',
-                        clight: '#f1f3f4',
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Roboto', sans-serif;
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2560&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            user-select: none;
+            color: #f3f4f6;
             overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
         }
-        .app-window {
-            position: absolute;
-            transition: transform 0.1s ease, opacity 0.15s ease;
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+
+        .win-mica {
+            background: rgba(32, 32, 32, 0.85);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
         }
-        .shelf-icon {
-            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .shelf-icon:hover {
-            transform: translateY(-5px) scale(1.12);
-        }
-        .chrome-glass {
-            background: rgba(32, 33, 36, 0.85);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-        }
-        .popup-glass {
-            background: rgba(29, 30, 34, 0.92);
+
+        .win-glass {
+            background: rgba(20, 20, 20, 0.75);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.12);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.5); }
+
+        .taskbar {
+            background: rgba(24, 24, 24, 0.88);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes windowOpen {
+            0% { transform: scale(0.92) translateY(15px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .window-animate {
+            animation: windowOpen 0.25s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
     </style>
 </head>
-<body id="mainBody" class="text-slate-100 h-screen w-screen flex flex-col relative overflow-hidden bg-slate-950" style="background-image: linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #020617 100%);" onclick="closeAllPopups(event)">
+<body class="h-full flex flex-col justify-between relative">
 
-    <!-- Desktop Area -->
-    <div class="flex-1 relative p-6 flex flex-col justify-start items-start gap-6 overflow-hidden" id="desktopArea">
-        <!-- Desktop Grid Icons -->
-        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 max-w-4xl z-10">
-            <button ondblclick="openAppWindow('games')" onclick="playSound('click')" class="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-white/10 transition-colors w-20 text-center">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-gamepad"></i>
-                </div>
-                <span class="text-[11px] font-medium text-white drop-shadow truncate w-full">Games Hub</span>
-            </button>
-            <button ondblclick="openAppWindow('youtube')" onclick="playSound('click')" class="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-white/10 transition-colors w-20 text-center">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-105 transition-transform">
-                    <i class="fa-brands fa-youtube"></i>
-                </div>
-                <span class="text-[11px] font-medium text-white drop-shadow truncate w-full">YouTube</span>
-            </button>
-            <button ondblclick="openAppWindow('browser')" onclick="playSound('click')" class="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-white/10 transition-colors w-20 text-center">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-compass"></i>
-                </div>
-                <span class="text-[11px] font-medium text-white drop-shadow truncate w-full">Unblocked</span>
-            </button>
-            <button ondblclick="openAppWindow('settings')" onclick="playSound('click')" class="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-white/10 transition-colors w-20 text-center">
-                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 to-orange-600 flex items-center justify-center text-white text-xl shadow-lg group-hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-gear"></i>
-                </div>
-                <span class="text-[11px] font-medium text-white drop-shadow truncate w-full">Settings</span>
-            </button>
+    <div id="lockScreen" class="absolute inset-0 z-50 bg-cover bg-center flex flex-col justify-between p-12 transition-all duration-700" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2560&auto=format&fit=crop')">
+        <div class="flex flex-col items-center mt-16 text-center">
+            <h1 id="lockClock" class="text-8xl font-light text-white tracking-tighter drop-shadow-lg">9:41</h1>
+            <p id="lockDate" class="text-xl font-medium text-white/90 mt-2 drop-shadow">Saturday, October 3</p>
         </div>
-    </div>
 
-    <!-- ChromeOS App Launcher Popup -->
-    <div id="appLauncherMenu" onclick="event.stopPropagation()" class="absolute bottom-16 left-3 z-50 w-[450px] popup-glass border border-white/15 rounded-3xl p-6 shadow-2xl hidden flex flex-col gap-4 transform transition-all scale-95 opacity-0">
-        <div class="flex items-center justify-between">
-            <h3 class="font-bold text-sm text-white flex items-center gap-2"><i class="fa-solid fa-circle-dot text-blue-400"></i> App Launcher</h3>
-            <button onclick="toggleAppLauncher()" class="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-slate-300 hover:text-white"><i class="fa-solid fa-xmark text-xs"></i></button>
-        </div>
-        <!-- Search bar inside launcher -->
-        <div class="relative">
-            <input type="text" id="launcherSearch" placeholder="Search apps, games, or proxy links..." 
-                class="w-full bg-black/40 border border-white/15 rounded-xl px-4 py-2.5 pl-9 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-500">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
-        </div>
-        <!-- Grid of launcher apps -->
-        <div class="grid grid-cols-4 gap-3 max-h-72 overflow-y-auto pr-1">
-            <button onclick="openAppWindow('games'); toggleAppLauncher();" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
-                <div class="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white text-base shadow"><i class="fa-solid fa-gamepad"></i></div>
-                <span class="text-[11px] text-slate-200 truncate w-full text-center font-medium">Games</span>
-            </button>
-            <button onclick="openAppWindow('youtube'); toggleAppLauncher();" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
-                <div class="w-11 h-11 rounded-2xl bg-red-600 flex items-center justify-center text-white text-base shadow"><i class="fa-brands fa-youtube"></i></div>
-                <span class="text-[11px] text-slate-200 truncate w-full text-center font-medium">YouTube</span>
-            </button>
-            <button onclick="openAppWindow('browser'); toggleAppLauncher();" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
-                <div class="w-11 h-11 rounded-2xl bg-emerald-600 flex items-center justify-center text-white text-base shadow"><i class="fa-solid fa-compass"></i></div>
-                <span class="text-[11px] text-slate-200 truncate w-full text-center font-medium">Browser</span>
-            </button>
-            <button onclick="openAppWindow('music'); toggleAppLauncher();" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
-                <div class="w-11 h-11 rounded-2xl bg-purple-600 flex items-center justify-center text-white text-base shadow"><i class="fa-solid fa-music"></i></div>
-                <span class="text-[11px] text-slate-200 truncate w-full text-center font-medium">Music</span>
-            </button>
-            <button onclick="openAppWindow('calculator'); toggleAppLauncher();" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
-                <div class="w-11 h-11 rounded-2xl bg-amber-600 flex items-center justify-center text-white text-base shadow"><i class="fa-solid fa-calculator"></i></div>
-                <span class="text-[11px] text-slate-200 truncate w-full text-center font-medium">Math</span>
-            </button>
-            <button onclick="openAppWindow('terminal'); toggleAppLauncher();" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
-                <div class="w-11 h-11 rounded-2xl bg-slate-700 flex items-center justify-center text-white text-base shadow"><i class="fa-solid fa-terminal"></i></div>
-                <span class="text-[11px] text-slate-200 truncate w-full text-center font-medium">Terminal</span>
-            </button>
-            <button onclick="openAppWindow('settings'); toggleAppLauncher();" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
-                <div class="w-11 h-11 rounded-2xl bg-indigo-600 flex items-center justify-center text-white text-base shadow"><i class="fa-solid fa-gear"></i></div>
-                <span class="text-[11px] text-slate-200 truncate w-full text-center font-medium">Settings</span>
-            </button>
-            <button onclick="toggleStealthMode(); toggleAppLauncher();" class="flex flex-col items-center gap-1.5 p-3 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors">
-                <div class="w-11 h-11 rounded-2xl bg-rose-600 flex items-center justify-center text-white text-base shadow"><i class="fa-solid fa-user-secret"></i></div>
-                <span class="text-[11px] text-slate-200 truncate w-full text-center font-medium">Cloak</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- ChromeOS Quick Settings Tray Popup -->
-    <div id="quickSettingsPopup" onclick="event.stopPropagation()" class="absolute bottom-16 right-3 z-50 w-80 popup-glass border border-white/15 rounded-3xl p-5 shadow-2xl hidden flex flex-col gap-4 transform transition-all scale-95 opacity-0">
-        <!-- User profile header -->
-        <div class="flex items-center gap-3 p-2 bg-white/5 rounded-2xl">
-            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-bold text-white text-sm">DE</div>
-            <div class="flex-1 truncate">
-                <h4 class="text-xs font-bold text-white truncate">Diego User</h4>
-                <p class="text-[10px] text-slate-400 truncate">diego.knows@chromebook.edu</p>
+        <div id="loginPrompt" class="flex flex-col items-center mb-24 cursor-pointer group" onclick="showPasswordInput()">
+            <div class="w-28 h-28 rounded-full border-2 border-white/40 overflow-hidden shadow-2xl mb-4 group-hover:scale-105 transition-all bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center text-4xl">
+                👤
             </div>
-            <button onclick="showNotification('Power', 'Locking session...');" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-300"><i class="fa-solid fa-lock text-xs"></i></button>
+            <h3 class="text-xl font-semibold text-white drop-shadow">Administrator</h3>
+            <p class="text-xs text-white/70 mt-1">Click to sign in (Password: peanut or 0290)</p>
         </div>
 
-        <!-- Quick Toggles Grid -->
-        <div class="grid grid-cols-2 gap-2">
-            <button onclick="toggleQuickTile(this)" class="flex items-center gap-3 p-3 rounded-2xl bg-blue-600/30 border border-blue-500/40 text-left transition-all">
-                <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xs"><i class="fa-solid fa-wifi"></i></div>
-                <div><p class="text-[11px] font-bold text-white">Wi-Fi</p><p class="text-[9px] text-blue-300">School_Secure</p></div>
-            </button>
-            <button onclick="toggleQuickTile(this)" class="flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 text-left transition-all">
-                <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-slate-300 text-xs"><i class="fa-solid fa-bluetooth"></i></div>
-                <div><p class="text-[11px] font-bold text-white">Bluetooth</p><p class="text-[9px] text-slate-400">Connected</p></div>
-            </button>
+        <div id="passwordInputBox" class="hidden flex flex-col items-center mb-24">
+            <div class="w-24 h-24 rounded-full border-2 border-white/40 overflow-hidden shadow-2xl mb-4 bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center text-3xl">
+                👤
+            </div>
+            <h3 class="text-lg font-semibold text-white mb-3">Administrator</h3>
+            <form onsubmit="handleLogin(event)" class="flex items-center gap-2">
+                <input type="password" id="passInput" placeholder="Password (peanut / 0290)" autofocus
+                    class="bg-black/50 border border-white/30 rounded-md px-4 py-2 text-sm text-white placeholder-white/50 focus:outline-none focus:border-blue-500 backdrop-blur-md w-64 shadow-inner">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium shadow-md transition-all">→</button>
+            </form>
+            <p id="loginError" class="text-xs text-rose-400 mt-2 h-4"></p>
         </div>
 
-        <!-- Sliders -->
-        <div class="space-y-3 bg-white/5 p-3.5 rounded-2xl">
+        <div class="flex justify-between items-center text-xs text-white/80">
+            <span>Windows 11 Enterprise</span>
+            <div class="flex items-center gap-4">
+                <span>📶 Connected</span>
+                <span>🔋 100%</span>
+            </div>
+        </div>
+    </div>
+
+    <main id="desktop" class="flex-grow relative p-4 grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-6 overflow-hidden z-10 content-start">
+        <!-- Only clean essential icons on desktop (Games & Edge) -->
+    </main>
+
+    <div id="startMenu" class="absolute bottom-16 left-1/2 -translate-x-1/2 w-[620px] h-[560px] win-mica rounded-2xl shadow-2xl z-40 hidden flex flex-col p-6 border border-white/15">
+        <div class="relative mb-6">
+            <span class="absolute left-3.5 top-3 text-slate-400 text-sm">🔍</span>
+            <input type="text" id="startSearch" placeholder="Search full game & proxy library..." 
+                class="w-full bg-black/40 border border-white/15 rounded-lg py-2.5 pl-10 pr-4 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 shadow-inner">
+        </div>
+
+        <div class="flex justify-between items-center mb-3">
+            <span class="text-xs font-semibold text-slate-200">All Apps & Game Portals</span>
+            <span id="appCount" class="text-[11px] text-blue-400"></span>
+        </div>
+
+        <div id="startGrid" class="grid grid-cols-5 gap-3 overflow-y-auto max-h-[360px] pr-2">
+            <!-- Populated via script -->
+        </div>
+
+        <div class="mt-auto pt-4 border-t border-white/10 flex justify-between items-center text-xs">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">A</div>
+                <span class="font-medium">Administrator</span>
+            </div>
+            <button onclick="lockDesktop()" class="p-2 hover:bg-white/10 rounded-lg text-rose-400" title="Lock">🔒</button>
+        </div>
+    </div>
+
+    <div id="appWindow" class="absolute top-12 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl h-[84%] win-mica rounded-xl shadow-2xl z-30 hidden flex flex-col border border-white/20 window-animate overflow-hidden">
+        <div class="bg-[#181818] px-4 py-2.5 flex items-center justify-between border-b border-white/10 select-none cursor-move" id="windowHeader">
             <div class="flex items-center gap-3">
-                <i class="fa-solid fa-volume-high text-xs text-slate-300 w-4"></i>
-                <input type="range" min="0" max="100" value="80" class="flex-1 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                <span id="winIcon" class="text-sm">🌐</span>
+                <span id="winTitle" class="text-xs font-medium text-slate-200">Microsoft Edge</span>
             </div>
-            <div class="flex items-center gap-3">
-                <i class="fa-solid fa-sun text-xs text-slate-300 w-4"></i>
-                <input type="range" min="20" max="100" value="100" class="flex-1 h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-blue-500">
+            <div class="flex items-center gap-1">
+                <button onclick="minimizeWindow()" class="w-8 h-8 hover:bg-white/10 rounded flex items-center justify-center text-xs text-slate-300">🗕</button>
+                <button onclick="maximizeWindow()" class="w-8 h-8 hover:bg-white/10 rounded flex items-center justify-center text-xs text-slate-300">🗖</button>
+                <button onclick="closeWindow()" class="w-8 h-8 hover:bg-rose-600 rounded flex items-center justify-center text-xs text-slate-300">✕</button>
             </div>
         </div>
 
-        <!-- Status Badges -->
-        <div class="flex items-center justify-between text-[11px] text-slate-300 px-1">
-            <span class="flex items-center gap-1.5"><i class="fa-solid fa-shield-halved text-emerald-400"></i> Shield Protected</span>
-            <span id="popupFps" class="font-mono text-emerald-400 font-bold">60 FPS</span>
+        <div class="bg-[#202020] px-4 py-2 flex items-center gap-3 border-b border-white/10">
+            <div class="flex items-center gap-1">
+                <button class="p-1.5 hover:bg-white/10 rounded text-slate-400 text-xs">←</button>
+                <button class="p-1.5 hover:bg-white/10 rounded text-slate-400 text-xs">→</button>
+                <button onclick="reloadWin()" class="p-1.5 hover:bg-white/10 rounded text-slate-400 text-xs">🔄</button>
+            </div>
+            <div class="flex-grow bg-black/40 border border-white/10 rounded-full px-4 py-1 text-xs text-slate-300 flex items-center gap-2">
+                <span class="text-emerald-400">🔒</span>
+                <span id="winUrlDisplay" class="truncate">https://...</span>
+            </div>
+        </div>
+
+        <div class="flex-grow relative bg-white w-full h-full">
+            <div id="winLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 z-10 gap-3">
+                <div class="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p class="text-xs text-slate-400">Loading secure proxy tunnel...</p>
+            </div>
+            <iframe id="winFrame" src="" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
         </div>
     </div>
 
-    <!-- Active App Window Container -->
-    <div id="windowContainer" class="absolute inset-0 z-30 pointer-events-none hidden">
-        <!-- Dynamically rendered draggable app window -->
-    </div>
-
-    <!-- ChromeOS Bottom Shelf -->
-    <div class="h-14 chrome-glass border-t border-white/15 flex items-center justify-between px-3 z-40 select-none shadow-2xl">
-        
-        <!-- Left: Launcher & App Icons -->
+    <footer class="taskbar h-12 w-full flex items-center justify-between px-4 z-40 select-none">
         <div class="flex items-center gap-2">
-            <!-- Launcher Button -->
-            <button onclick="playSound('click'); toggleAppLauncher();" class="shelf-icon w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white shadow" title="Launcher">
-                <i class="fa-solid fa-circle-dot text-blue-400 text-lg"></i>
+            <button onclick="toggleStartMenu()" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center transition-all">
+                <svg class="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
             </button>
+            <button onclick="toggleStartMenu()" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center text-lg" title="Search">🔍</button>
+        </div>
 
-            <div class="h-6 w-[1px] bg-white/15 mx-1"></div>
+        <div class="flex items-center gap-1">
+            <button onclick="toggleStartMenu()" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center text-xl transition-all" title="Start">❖</button>
+            <button onclick="openApp('https://duckduckgo.com', 'Microsoft Edge', '🌐')" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center text-xl transition-all relative" title="Edge Browser">
+                🌐
+                <div class="absolute bottom-0.5 w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
+            </button>
+            <button onclick="openApp('https://frogiesarcade.win', 'Games Hub', '🎮')" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center transition-all relative" title="Games Hub">
+                <svg class="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 10.5c-.8-.8-2.2-.8-3 0l-1.5 1.5-3-3 1.5-1.5c.8-.8.8-2.2 0-3s-2.2-.8-3 0L9.5 6 6.5 3c-.8-.8-2.2-.8-3 0s-.8 2.2 0 3l3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l1.5-1.5 3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l3-3 1.5 1.5c.8.8 2.2.8 3 0s.8-2.2 0-3l-3-3 1.5-1.5c.8-.8-.8-2.2 0-3z"/></svg>
+            </button>
+        </div>
 
-            <!-- 9 Shelf App Buttons -->
-            <div class="flex items-center gap-1.5">
-                <button onclick="playSound('click'); openAppWindow('games')" class="shelf-icon w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-blue-400 text-base" title="Games & All Sites Hub">
-                    <i class="fa-solid fa-gamepad"></i>
-                </button>
-                <button onclick="playSound('click'); openAppWindow('youtube')" class="shelf-icon w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-red-400 text-base" title="YouTube">
-                    <i class="fa-brands fa-youtube"></i>
-                </button>
-                <button onclick="playSound('click'); openAppWindow('browser')" class="shelf-icon w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-emerald-400 text-base" title="Unblocked Browser">
-                    <i class="fa-solid fa-compass"></i>
-                </button>
-                <button onclick="playSound('click'); openAppWindow('music')" class="shelf-icon w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-purple-400 text-base" title="Music">
-                    <i class="fa-solid fa-music"></i>
-                </button>
-                <button onclick="playSound('click'); openAppWindow('calculator')" class="shelf-icon w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-amber-400 text-base" title="Calculator">
-                    <i class="fa-solid fa-calculator"></i>
-                </button>
-                <button onclick="playSound('click'); openAppWindow('terminal')" class="shelf-icon w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-teal-400 text-base" title="Terminal">
-                    <i class="fa-solid fa-terminal"></i>
-                </button>
-                <button onclick="playSound('click'); openAppWindow('settings')" class="shelf-icon w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-indigo-400 text-base" title="Settings">
-                    <i class="fa-solid fa-gear"></i>
-                </button>
-                <button onclick="playSound('click'); toggleStealthMode()" class="shelf-icon w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-rose-400 text-base" title="Stealth Cloak">
-                    <i class="fa-solid fa-user-secret"></i>
-                </button>
-                <button onclick="playSound('click'); openAppWindow('custom')" class="shelf-icon w-10 h-10 rounded-xl bg-white/5 hover:bg-white/15 flex items-center justify-center text-cyan-400 text-base" title="Custom URL">
-                    <i class="fa-solid fa-globe"></i>
-                </button>
+        <div class="flex items-center gap-3 text-xs text-slate-300 px-2 py-1 hover:bg-white/10 rounded-lg cursor-pointer">
+            <div class="flex flex-col items-end">
+                <span id="taskTime" class="font-medium">9:41 AM</span>
+                <span id="taskDate" class="text-[10px] text-slate-400">10/3/2026</span>
             </div>
         </div>
-
-        <!-- Right: ChromeOS Status Tray -->
-        <button onclick="playSound('click'); toggleQuickSettings()" class="flex items-center gap-3 bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-2xl transition-colors cursor-pointer text-xs font-medium">
-            <span id="realFpsCount" class="font-mono text-emerald-400 font-bold hidden sm:inline">60 FPS</span>
-            <div class="flex items-center gap-1.5 text-slate-300">
-                <i class="fa-solid fa-wifi text-xs text-blue-400"></i>
-                <i class="fa-solid fa-battery-full text-xs text-emerald-400"></i>
-            </div>
-            <span id="shelfClock" class="font-bold text-white">12:00 PM</span>
-        </button>
-
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="notificationToast" class="fixed bottom-20 right-6 z-50 transform translate-y-32 opacity-0 transition-all duration-300 popup-glass border border-blue-500/60 px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-4 max-w-sm">
-        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg font-bold shadow-inner">
-            <i class="fa-solid fa-bell"></i>
-        </div>
-        <div>
-            <h4 id="toastTitle" class="text-xs font-bold text-slate-400 uppercase tracking-wider">ChromeOS</h4>
-            <p id="toastMessage" class="text-sm font-semibold text-slate-100 mt-0.5">Notification message here</p>
-        </div>
-    </div>
+    </footer>
 
     <script>
-        // Real FPS Counter
-        let frameCount = 0;
-        let lastFpsUpdate = performance.now();
-        const fpsElement = document.getElementById('realFpsCount');
-        const popupFps = document.getElementById('popupFps');
-
-        function measureFps(currentTime) {
-            frameCount++;
-            const delta = currentTime - lastFpsUpdate;
-            if (delta >= 1000) {
-                const currentFps = Math.round((frameCount * 1000) / delta);
-                if (fpsElement) {
-                    fpsElement.textContent = `${currentFps} FPS`;
-                    if (popupFps) popupFps.textContent = `${currentFps} FPS`;
-                    if (currentFps >= 50) fpsElement.className = 'font-mono text-emerald-400 font-bold hidden sm:inline';
-                    else if (currentFps >= 30) fpsElement.className = 'font-mono text-amber-400 font-bold hidden sm:inline';
-                    else fpsElement.className = 'font-mono text-rose-400 font-bold hidden sm:inline';
-                }
-                frameCount = 0;
-                lastFpsUpdate = currentTime;
-            }
-            requestAnimationFrame(measureFps);
-        }
-        requestAnimationFrame(measureFps);
-
-        // Clock
         function updateClock() {
             const now = new Date();
             let hours = now.getHours();
             const minutes = now.getMinutes().toString().padStart(2, '0');
             const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12;
-            hours = hours ? hours : 12;
-            const clockEl = document.getElementById('shelfClock');
-            if (clockEl) clockEl.textContent = `${hours}:${minutes} ${ampm}`;
+            hours = hours % 12 || 12;
+            
+            document.getElementById('taskTime').innerText = `${hours}:${minutes} ${ampm}`;
+            document.getElementById('taskDate').innerText = now.toLocaleDateString();
+            document.getElementById('lockClock').innerText = `${hours}:${minutes}`;
+            
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            document.getElementById('lockDate').innerText = now.toLocaleDateString('en-US', options);
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function playSound(type) {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                if (type === 'click') {
-                    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.04);
-                    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + 0.04);
-                }
-            } catch(e) {}
+        function showPasswordInput() {
+            document.getElementById('loginPrompt').classList.add('hidden');
+            document.getElementById('passwordInputBox').classList.remove('hidden');
+            document.getElementById('passInput').focus();
         }
 
-        function showNotification(title, message) {
-            const toast = document.getElementById('notificationToast');
-            document.getElementById('toastTitle').textContent = title;
-            document.getElementById('toastMessage').textContent = message;
-            toast.classList.remove('translate-y-32', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-32', 'opacity-0');
-            }, 3500);
-        }
-
-        let isLauncherOpen = false;
-        let isQuickSettingsOpen = false;
-
-        function toggleAppLauncher() {
-            playSound('click');
-            closeAllPopups();
-            isLauncherOpen = !isLauncherOpen;
-            const menu = document.getElementById('appLauncherMenu');
-            if (isLauncherOpen) {
-                menu.classList.remove('hidden');
-                setTimeout(() => menu.classList.remove('scale-95', 'opacity-0'), 10);
+        function handleLogin(e) {
+            e.preventDefault();
+            const val = document.getElementById('passInput').value;
+            if (val === 'peanut' || val === '0290') {
+                const lock = document.getElementById('lockScreen');
+                lock.style.opacity = '0';
+                setTimeout(() => lock.style.display = 'none', 700);
             } else {
-                menu.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => menu.classList.add('hidden'), 200);
+                document.getElementById('loginError').innerText = "Incorrect password. Try peanut or 0290";
+                document.getElementById('passInput').value = "";
             }
         }
 
-        function toggleQuickSettings() {
-            playSound('click');
-            closeAllPopups();
-            isQuickSettingsOpen = !isQuickSettingsOpen;
-            const menu = document.getElementById('quickSettingsPopup');
-            if (isQuickSettingsOpen) {
-                menu.classList.remove('hidden');
-                setTimeout(() => menu.classList.remove('scale-95', 'opacity-0'), 10);
-            } else {
-                menu.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => menu.classList.add('hidden'), 200);
-            }
+        function lockDesktop() {
+            const lock = document.getElementById('lockScreen');
+            lock.style.display = 'flex';
+            setTimeout(() => lock.style.opacity = '1', 50);
+            document.getElementById('passwordInputBox').classList.add('hidden');
+            document.getElementById('loginPrompt').classList.remove('hidden');
+            document.getElementById('startMenu').classList.add('hidden');
         }
 
-        function closeAllPopups(e) {
-            if (isLauncherOpen) {
-                isLauncherOpen = false;
-                const menu = document.getElementById('appLauncherMenu');
-                menu.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => menu.classList.add('hidden'), 200);
-            }
-            if (isQuickSettingsOpen) {
-                isQuickSettingsOpen = false;
-                const menu = document.getElementById('quickSettingsPopup');
-                menu.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => menu.classList.add('hidden'), 200);
-            }
-        }
-
-        function toggleQuickTile(btn) {
-            playSound('click');
-            const isActive = btn.classList.contains('bg-blue-600/30');
-            if (isActive) {
-                btn.className = 'flex items-center gap-3 p-3 rounded-2xl bg-white/5 border border-white/10 text-left transition-all';
-                btn.querySelector('div').className = 'w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center text-slate-400 text-xs';
-                btn.querySelectorAll('p')[1].className = 'text-[9px] text-slate-400';
-            } else {
-                btn.className = 'flex items-center gap-3 p-3 rounded-2xl bg-blue-600/30 border border-blue-500/40 text-left transition-all';
-                btn.querySelector('div').className = 'w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xs';
-                btn.querySelectorAll('p')[1].className = 'text-[9px] text-blue-300';
-            }
-        }
-
-        let isStealthCloaked = false;
-        function toggleStealthMode() {
-            isStealthCloaked = !isStealthCloaked;
-            if (isStealthCloaked) showNotification('Stealth Cloak', 'about:blank cloaking active.');
-            else showNotification('Stealth Cloak', 'Cloaking disabled.');
-        }
-
-        // Exact User Provided Websites & Games List
+        // Complete user library list
         const rawLinks = [
-            { id: 'u-1', name: "Calcsolver.net", url: "https://calcsolver.net", category: "math", icon: "fa-calculator" },
-            { id: 'u-2', name: "Calcsolver.com", url: "https://calcsolver.com", category: "math", icon: "fa-calculator" },
-            { id: 'u-3', name: "Mathcheck.net", url: "https://mathcheck.net", category: "math", icon: "fa-square-root-variable" },
-            { id: 'u-4', name: "Solvecalc.net", url: "https://solvecalc.net", category: "math", icon: "fa-calculator" },
-            { id: 'u-5', name: "Calc Solver Pro", url: "https://calcsolverpro.com", category: "math", icon: "fa-laptop-code" },
-            { id: 'u-6', name: "Figurestand Worker", url: "https://figurestand.workerlo.workers.dev", category: "proxy", icon: "fa-server" },
-            { id: 'u-7', name: "Nexlink Finder", url: "https://bit.ly/nexlinkfinder", category: "proxy", icon: "fa-link" },
-            { id: 'u-8', name: "Opium Best Storage", url: "https://storage.googleapis.com/opiumbest/index.html", category: "arcade", icon: "fa-database" },
-            { id: 'u-9', name: "Ghost Proxy", url: "https://ghostproxy.anonymoose.workers.dev/", category: "proxy", icon: "fa-shield-halved" },
-            { id: 'u-10', name: "Nocturne Arcade", url: "https://nocturne.lol/", category: "arcade", icon: "fa-moon" },
-            { id: 'u-11', name: "Lucide Logo SVG", url: "https://cdn.jsdelivr.net/gh/lucideproxy/svg@latest/logo.svg", category: "asset", icon: "fa-image" },
-            { id: 'u-12', name: "Blooooket Hub", url: "https://blooooket.vercel.app", category: "arcade", icon: "fa-cube" },
-            { id: 'u-13', name: "Galxy Portal", url: "https://galxy.it.com/", category: "proxy", icon: "fa-globe" },
-            { id: 'u-14', name: "Helium On", url: "https://helium-on.top/", category: "proxy", icon: "fa-fire" },
-            { id: 'u-15', name: "Duck Math", url: "https://duckmath.org/", category: "math", icon: "fa-graduation-cap" },
-            { id: 'u-16', name: "Mizu Math", url: "https://mizumath.com/", category: "math", icon: "fa-water" },
-            { id: 'u-17', name: "Delta Hub Games", url: "https://sites.google.com/view/d3ltahubgames/home", category: "arcade", icon: "fa-gamepad" },
-            { id: 'u-18', name: "T9 Class Arcade", url: "https://t9-is-the-goat.netlify.app/class.html", category: "arcade", icon: "fa-school" },
-            { id: 'u-19', name: "Cloudfront Portal", url: "https://d1xzx4vznne13n.cloudfront.net/", category: "proxy", icon: "fa-cloud" },
-            { id: 'u-20', name: "Studysync UK", url: "https://studysync.co.uk", category: "study", icon: "fa-book" },
-            { id: 'u-21', name: "Chud Games SVG", url: "https://cdn.jsdelivr.net/gh/lolhahusuckxj/Chud/games.svg", category: "asset", icon: "fa-file-code" },
-            { id: 'u-22', name: "Menist Portal", url: "https://menist.free.nf/?i=1", category: "proxy", icon: "fa-network-wired" },
-            { id: 'u-23', name: "Calc Cyclops Project", url: "https://Calc.cyclopsproject.eu", category: "math", icon: "fa-calculator" },
-            { id: 'u-24', name: "Vecta Unblocked", url: "https://sites.google.com/view/vecta-unblocked/-_1", category: "arcade", icon: "fa-bolt" },
-            { id: 'u-25', name: "Piretti Sports", url: "https://pirettisports.com/", category: "sports", icon: "fa-futbol" },
-            { id: 'u-26', name: "Algebra Khastat", url: "https://algebra.khastat.org", category: "math", icon: "fa-square-root-variable" },
-            { id: 'u-27', name: "Frogies Arcade", url: "https://frogiesarcade.win", category: "arcade", icon: "fa-frog" },
-            { id: 'u-28', name: "Math Leaning CFD", url: "https://math.leaning.cfd", category: "math", icon: "fa-chart-line" },
-            { id: 'u-29', name: "Unbl Internet University", url: "https://docs.unblinternetuniversity.workers.dev", category: "proxy", icon: "fa-graduation-cap" },
-            { id: 'u-30', name: "Gorich HK Question", url: "https://question.gorich.hk", category: "proxy", icon: "fa-circle-question" },
-            { id: 'u-31', name: "Blue Monkey Majoitus", url: "https://blue.monkey.majoitus.ee", category: "proxy", icon: "fa-monkey" },
-            { id: 'u-32', name: "Amazon S3 Storage", url: "https://s3.amazonaws.com", category: "storage", icon: "fa-aws" },
-            { id: 'u-33', name: "Misem ID", url: "https://they.misem.or.id", category: "proxy", icon: "fa-globe" },
-            { id: 'u-34', name: "Bull Chanka", url: "https://bull.chanka.com", category: "proxy", icon: "fa-bullhorn" },
-            { id: 'u-35', name: "Ryan J Lowe Class", url: "https://class.ryanjlowe.us", category: "study", icon: "fa-chalkboard-user" },
-            { id: 'u-36', name: "Education School City", url: "https://education.schoolcity.cc", category: "study", icon: "fa-school" },
-            { id: 'u-37', name: "Touch Grass Now Catz", url: "https://catz.touchgrassnow.org/", category: "arcade", icon: "fa-cat" },
-            { id: 'u-38', name: "Uranium Site Worker", url: "https://uraniumsite.t20988828.workers.dev/", category: "proxy", icon: "fa-radiation" },
-            { id: 'u-39', name: "Coolkidd Tech", url: "https://c00lkiddtech.live/", category: "arcade", icon: "fa-face-smile" },
-            { id: 'u-40', name: "Yukios Netlify", url: "https://yukios.netlify.app/", category: "arcade", icon: "fa-rocket" },
-            { id: 'u-41', name: "OVH VPS Server", url: "https://vps-d38e82a1.vps.ovh.us/", category: "proxy", icon: "fa-server" },
-            { id: 'u-42', name: "Xylora Org", url: "https://xylora.org/", category: "proxy", icon: "fa-compass" },
-            { id: 'u-43', name: "A21 Surge SVG", url: "https://a21ae49a9f4a.surge.sh/index.svg", category: "asset", icon: "fa-file-image" },
-            { id: 'u-44', name: "Google Apps Script Macro", url: "https://script.google.com/macros/s/AKfycbxUUcSB6qviiBDB3l8eB0A2KX2To2oYWLuxFqhVp8pVELgfFvJUScgZsm40mDa4z46U/exec?id=1PMOKGr4dS0QUAzB7aLJZTKWsrnm4CARe", category: "script", icon: "fa-code" },
-            { id: 'u-45', name: "Petezah Games", url: "https://petezahgames.com/", category: "arcade", icon: "fa-gamepad" },
-            { id: 'u-46', name: "Bookworm NP", url: "https://tt.bookworm.com.np", category: "study", icon: "fa-book-open" }
+            "Games",
+            "Calcsolver.net",
+            "Calcsolver.com",
+            "Mathcheck.net",
+            "Solvecalc.net",
+            "https://calcsolverpro.com",
+            "https://figurestand.workerlo.workers.dev",
+            "bit.ly/nexlinkfinder",
+            "https://storage.googleapis.com/opiumbest/index.html",
+            "https://ghostproxy.anonymoose.workers.dev/",
+            "https://nocturne.lol/",
+            "https://cdn.jsdelivr.net/gh/lucideproxy/svg@latest/logo.svg",
+            "https://blooooket.vercel.app",
+            "https://galxy.it.com/",
+            "https://helium-on.top/",
+            "https://duckmath.org/",
+            "https://mizumath.com/",
+            "https://sites.google.com/view/d3ltahubgames/home",
+            "https://t9-is-the-goat.netlify.app/class.html",
+            "https://d1xzx4vznne13n.cloudfront.net/",
+            "https://studysync.co.uk",
+            "https://cdn.jsdelivr.net/gh/lolhahusuckxj/Chud/games.svg",
+            "https://menist.free.nf/?i=1",
+            "Calc.cyclopsproject.eu",
+            "https://sites.google.com/view/vecta-unblocked/-_1",
+            "https://pirettisports.com/",
+            "https://algebra.khastat.org",
+            "https://frogiesarcade.win",
+            "https://math.leaning.cfd",
+            "https://docs.unblinternetuniversity.workers.dev",
+            "question.gorich.hk",
+            "blue.monkey.majoitus.ee",
+            "s3.amazonaws.com",
+            "they.misem.or.id",
+            "https://bull.chanka.com",
+            "https://class.ryanjlowe.us",
+            "https://education.schoolcity.cc",
+            "https://catz.touchgrassnow.org/",
+            "https://uraniumsite.t20988828.workers.dev/",
+            "https://c00lkiddtech.live/",
+            "https://yukios.netlify.app/",
+            "https://vps-d38e82a1.vps.ovh.us/",
+            "https://xylora.org/",
+            "https://a21ae49a9f4a.surge.sh/index.svg",
+            "https://petezahgames.com/",
+            "https://tt.bookworm.com.np",
+            "https://brainworxedu.github.io/classes.html",
+            "space.colegioitalocomposto.cl",
+            "https://fluxv3-sooty.vercel.app/",
+            "https://endis.rest",
+            "https://ajhsvault.org",
+            "https://endis.college",
+            "https://practice.rest",
+            "https://monoxide.dev/",
+            "https://veterans4education.org/",
+            "https://donutshop.vip/",
+            "https://sealsarcade.xyz",
+            "https://mathlearn.nya.je",
+            "https://kahoot.undo.it",
+            "https://mathnotes.ne-t.org",
+            "https://aphistory.ra3.us",
+            "https://classroom.xn--ds-bja.info",
+            "https://schoology.clienturl.net",
+            "https://lost.dstand.com.au",
+            "https://ixl-learn.jakesthoughts.xyz",
+            "https://happylearn.port82.net",
+            "https://science-courses.xn--72cg7bdd3bro6b3ab9c8btw4x.com",
+            "https://ixl.ldtp.com",
+            "https://quizlet.lozan.com",
+            "https://yo-scan-this.qr-code.co.za",
+            "https://canvas.instructure.rkfd.com",
+            "https://1.2.3.tokes.ro",
+            "https://mathresources.dx4.uk",
+            "https://banana.ctx.cl",
+            "https://banana.ftp.sh",
+            "https://banana.jakesthoughts.xyz",
+            "https://banana.privatedns.org",
+            "https://banana.rkfd.com",
+            "https://educationate2026.s3.us-east-2.amazonaws.com/index.html",
+            "https://geometry-302267745.b-cdn.net/",
+            "https://science-411069385.b-cdn.net/",
+            "https://science-861197723.b-cdn.net",
+            "https://raw.githubusercontent.com/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://quantil.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://originfastly.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://fastly.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://gcore.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://testingcf.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdelivr.us/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.b-cdn.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.codeqihan.com/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.proxy.aks.moe/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdmirror.com/gh/seattleschools/media/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdmirror.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.cdn.zzko.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.onmicrosoft.cn/gh/seattleschools/media/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.onmicrosoft.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.nmmsl.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.duolaa.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.bili33.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.qaq.qa/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.aby.pub/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.topthink.com/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd.yizex.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://code.webcache.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://raw.esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.statically.io/gh/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.staticdelivr.com/gh/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://cdn.jsdelivr.net.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsdelivr.cdn.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://jsd-proxy.ygxz.in/gh/seattleschools/media/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://raw.githack.com/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://rawcdn.githack.com/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
+            "https://raw.githubusercontent.com/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://quantil.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://originfastly.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://fastly.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://gcore.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://testingcf.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdelivr.us/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.b-cdn.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.codeqihan.com/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.proxy.aks.moe/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdmirror.com/gh/seattleschools/media/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdmirror.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.cdn.zzko.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.onmicrosoft.cn/gh/seattleschools/media/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.onmicrosoft.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.nmmsl.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.duolaa.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.bili33.top/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.qaq.qa/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.aby.pub/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.topthink.com/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd.yizex.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://code.webcache.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://raw.esm.sh/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.statically.io/gh/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.staticdelivr.com/gh/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://cdn.jsdelivr.net.cn/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsdelivr.cdn.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://jsd-proxy.ygxz.in/gh/seattleschools/media/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://raw.githack.com/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg",
+            "https://rawcdn.githack.com/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg"
         ];
 
-        let activeWindowZ = 40;
-
-        function openAppWindow(appType, customTargetUrl) {
-            playSound('click');
-            closeAllPopups();
-            const container = document.getElementById('windowContainer');
-            container.classList.remove('hidden');
-            container.style.pointerEvents = 'auto';
-
-            let title = "App Window";
-            let icon = "fa-window-maximize";
-            let innerHtml = "";
-
-            if (appType === 'games') {
-                title = "All Unblocked Websites & Proxy Hub (" + rawLinks.length + " Sites)";
-                icon = "fa-gamepad";
-                innerHtml = `
-                    <div class="flex flex-col h-full bg-slate-900 text-slate-100">
-                        <div class="px-6 py-3.5 bg-slate-950 border-b border-white/10 flex items-center justify-between">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-gamepad text-blue-400"></i>
-                                <span class="font-bold text-xs uppercase tracking-wider">All ${rawLinks.length} Provided Sites Loaded</span>
-                            </div>
-                            <div class="relative w-72">
-                                <input type="text" id="gamesHubSearch" placeholder="Search all sites..." oninput="filterHubGames(this.value)"
-                                    class="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 pl-8 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-500">
-                                <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2 text-slate-400 text-xs"></i>
-                            </div>
-                        </div>
-                        <div class="flex-1 p-6 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" id="gamesHubGrid">
-                            <!-- Populated dynamically -->
-                        </div>
-                    </div>
-                `;
-            } else if (appType === 'youtube') {
-                title = "YouTube";
-                icon = "fa-brands fa-youtube";
-                innerHtml = `<iframe src="https://www.youtube.com/embed/videoseries?list=PLw-VjHDlEOgs658kAHR_LAaILBXb-s6Qc" class="w-full h-full border-none" allowfullscreen></iframe>`;
-            } else if (appType === 'browser') {
-                title = "Unblocked Web Proxy";
-                icon = "fa-solid fa-compass";
-                innerHtml = `
-                    <div class="flex flex-col h-full bg-slate-900">
-                        <div class="p-3 bg-slate-950 border-b border-white/10 flex gap-2">
-                            <input type="text" id="browserUrlInput" value="${customTargetUrl || 'https://petezahgames.com'}" class="flex-1 bg-black/40 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                            <button onclick="navigateBrowser()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white">Go</button>
-                        </div>
-                        <iframe id="browserFrame" src="${customTargetUrl || 'https://petezahgames.com'}" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
-                    </div>
-                `;
-            } else if (appType === 'music') {
-                title = "Spotify Music";
-                icon = "fa-solid fa-music";
-                innerHtml = `<iframe src="https://open.spotify.com" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>`;
-            } else if (appType === 'calculator') {
-                title = "Calculator & Math";
-                icon = "fa-solid fa-calculator";
-                innerHtml = `<iframe src="https://duckmath.org/" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>`;
-            } else if (appType === 'terminal') {
-                title = "Crostini Linux Terminal";
-                icon = "fa-solid fa-terminal";
-                innerHtml = `
-                    <div class="p-6 bg-slate-950 text-emerald-400 font-mono text-xs h-full overflow-y-auto">
-                        <p class="text-white font-bold mb-2">ChromeOS Crostini Linux Terminal (v124.0)</p>
-                        <p class="text-slate-400 mb-4">Type commands or run secure node packages.</p>
-                        <p class="text-blue-400">chronos@localhost:~$ <span class="text-white">neofetch</span></p>
-                        <pre class="my-2 text-emerald-300">
-       ---.     .---         OS: ChromeOS Linux (x86_64)
-      /   \\   /   \\        Host: Chromebook Plus RTX 4080
-     |     \\ /     |       Kernel: 6.6.10-linux-amt
-     |      |      |       Uptime: 142 mins
-      \\_   / \\   _/        Shell: bash 5.2.15
-        \`--'   \`--'          Resolution: 1920x1080
-                        </pre>
-                        <p class="text-blue-400 mt-4">chronos@localhost:~$ <span class="animate-pulse">_</span></p>
-                    </div>
-                `;
-            } else if (appType === 'settings') {
-                title = "ChromeOS Settings";
-                icon = "fa-solid fa-gear";
-                innerHtml = `
-                    <div class="p-8 bg-slate-900 text-slate-100 h-full overflow-y-auto max-w-2xl mx-auto">
-                        <h2 class="text-lg font-bold mb-4 text-white"><i class="fa-solid fa-gear text-blue-400 mr-2"></i> ChromeOS Wallpaper & Appearance</h2>
-                        <p class="text-xs text-slate-400 mb-6">Select a custom background theme for your ChromeOS desktop environment.</p>
-                        <div class="grid grid-cols-2 gap-3 mb-6">
-                            <button onclick="setBg('linear-gradient(135deg, #090d16 0%, #1e1b4b 50%, #020617 100%)')" class="p-3 rounded-xl bg-slate-950 border border-white/10 text-xs font-semibold text-left hover:border-blue-500">Midnight Deep Blue</button>
-                            <button onclick="setBg('linear-gradient(135deg, #022c22 0%, #065f46 50%, #021a14 100%)')" class="p-3 rounded-xl bg-emerald-950 border border-emerald-500/40 text-xs font-semibold text-left hover:bg-emerald-900">Emerald Forest</button>
-                            <button onclick="setBg('linear-gradient(135deg, #2b0b05 0%, #9a3412 50%, #1a0502 100%)')" class="p-3 rounded-xl bg-amber-950 border border-amber-500/40 text-xs font-semibold text-left hover:bg-amber-900">Volcanic Ember</button>
-                            <button onclick="setBg('linear-gradient(135deg, #18052b 0%, #581c87 50%, #0f051d 100%)')" class="p-3 rounded-xl bg-purple-950 border border-purple-500/40 text-xs font-semibold text-left hover:bg-purple-900">Cyberpunk Neon</button>
-                        </div>
-                        <label class="block text-xs font-bold text-slate-300 uppercase mb-2">Custom Wallpaper Image URL</label>
-                        <div class="flex gap-2">
-                            <input type="url" id="customBgUrlInput" placeholder="https://example.com/image.jpg" class="flex-1 bg-black/40 border border-white/15 rounded-xl px-4 py-2 text-xs text-white">
-                            <button onclick="applyCustomBg()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white">Apply</button>
-                        </div>
-                    </div>
-                `;
-            } else if (appType === 'custom') {
-                title = "Custom URL Web View";
-                icon = "fa-solid fa-globe";
-                innerHtml = `
-                    <div class="flex flex-col h-full bg-slate-900">
-                        <div class="p-3 bg-slate-950 border-b border-white/10 flex gap-2">
-                            <input type="text" id="customUrlInput" value="https://petezahgames.com" class="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
-                            <button onclick="loadCustomUrl()" class="px-4 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs font-bold text-white">Load</button>
-                        </div>
-                        <iframe id="customFrame" src="https://petezahgames.com" class="w-full h-full border-none" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
-                    </div>
-                `;
+        const apps = rawLinks.map((entry, index) => {
+            let url = entry.trim();
+            if (url === 'Games') url = '#';
+            else if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+            
+            let name = entry;
+            try {
+                if (url !== '#') {
+                    name = new URL(url).hostname.replace('www.', '');
+                }
+            } catch (e) {
+                name = entry;
             }
 
-            activeWindowZ++;
-            const winDiv = document.createElement('div');
-            winDiv.id = `appWindow_${Date.now()}`;
-            winDiv.className = 'app-window w-[920px] h-[600px] bg-slate-900 border border-white/15 rounded-2xl flex flex-col overflow-hidden';
-            winDiv.style.cssText = `left: calc(50% - 460px); top: calc(50% - 300px); z-index: ${activeWindowZ};`;
-            winDiv.innerHTML = `
-                <!-- Window Titlebar -->
-                <div class="window-titlebar h-10 bg-slate-950 border-b border-white/10 px-4 flex items-center justify-between select-none cursor-move">
-                    <div class="flex items-center gap-2 pointer-events-none">
-                        <i class="fa-solid ${icon} text-blue-400 text-xs"></i>
-                        <span class="font-bold text-xs text-white">${title}</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="closeSpecificWindow(this)" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-rose-500/20 text-slate-300 hover:text-rose-400 transition-colors flex items-center justify-center">
-                            <i class="fa-solid fa-xmark text-xs"></i>
-                        </button>
-                    </div>
+            let icon = "🛡️";
+            const lower = entry.toLowerCase();
+
+            if (entry === 'Games') {
+                icon = "🎮";
+            } else if (lower.includes('calc') || lower.includes('math') || lower.includes('algebra') || lower.includes('geometry')) {
+                icon = "🔢";
+            } else if (lower.includes('game') || lower.includes('arcade') || lower.includes('hub') || lower.includes('frogie') || lower.includes('blooo') || lower.includes('seal') || lower.includes('petezah')) {
+                icon = "🎮";
+            } else if (lower.includes('study') || lower.includes('school') || lower.includes('quizlet') || lower.includes('canvas') || lower.includes('schoology') || lower.includes('ixl') || lower.includes('class')) {
+                icon = "📚";
+            } else if (lower.endsWith('.svg') || lower.includes('/svg')) {
+                icon = "🖼️";
+            }
+
+            return { id: index, name: name, rawName: entry, url: url, icon: icon };
+        });
+
+        // Prioritize Games app first
+        apps.sort((a, b) => {
+            if (a.rawName === 'Games') return -1;
+            if (b.rawName === 'Games') return 1;
+            return 0;
+        });
+
+        // Render clean desktop (Only Games icon on desktop)
+        const desktop = document.getElementById('desktop');
+        function renderDesktop() {
+            desktop.innerHTML = '';
+            const gamesApp = apps.find(a => a.rawName === 'Games') || apps[0];
+            
+            const item = document.createElement('div');
+            item.className = "flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-white/10 cursor-pointer group text-center w-20";
+            item.onclick = () => openApp('https://frogiesarcade.win', 'Games & Arcades', '🎮');
+            item.innerHTML = `
+                <div class="w-12 h-12 rounded-xl win-glass flex items-center justify-center text-2xl shadow-md group-hover:scale-105 transition-all bg-gradient-to-br from-indigo-600/80 to-purple-700/80 ring-2 ring-indigo-400">
+                    <svg class="w-7 h-7 text-white drop-shadow" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 10.5c-.8-.8-2.2-.8-3 0l-1.5 1.5-3-3 1.5-1.5c.8-.8.8-2.2 0-3s-2.2-.8-3 0L9.5 6 6.5 3c-.8-.8-2.2-.8-3 0s-.8 2.2 0 3l3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l1.5-1.5 3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l3-3 1.5 1.5c.8.8 2.2.8 3 0s.8-2.2 0-3l-3-3 1.5-1.5c-.8.8-.8-2.2 0-3z"/></svg>
                 </div>
-                <!-- Window Body -->
-                <div class="flex-1 relative bg-black overflow-hidden">
-                    ${innerHtml}
-                </div>
+                <span class="text-[11px] text-white font-medium truncate w-full drop-shadow">Games</span>
             `;
-
-            winDiv.addEventListener('mousedown', () => {
-                activeWindowZ++;
-                winDiv.style.zIndex = activeWindowZ;
-            });
-
-            container.appendChild(winDiv);
-
-            if (appType === 'games') {
-                renderGamesInHub(rawLinks);
-            }
-
-            initDragAndDrop(winDiv);
+            desktop.appendChild(item);
         }
 
-        function closeSpecificWindow(btn) {
-            playSound('click');
-            const win = btn.closest('.app-window');
-            if (win) win.remove();
-            const container = document.getElementById('windowContainer');
-            if (container.children.length === 0) {
-                container.classList.add('hidden');
-                container.style.pointerEvents = 'none';
-            }
-        }
+        const startGrid = document.getElementById('startGrid');
+        function renderStartMenu(filter = '') {
+            startGrid.innerHTML = '';
+            const filtered = apps.filter(a => a.name.toLowerCase().includes(filter.toLowerCase()) || a.rawName.toLowerCase().includes(filter.toLowerCase()));
+            document.getElementById('appCount').innerText = `${filtered.length} items`;
+            
+            filtered.forEach(app => {
+                const item = document.createElement('div');
+                item.className = "flex flex-col items-center justify-center gap-1 p-2.5 rounded-lg hover:bg-white/10 cursor-pointer text-center group";
+                item.onclick = () => {
+                    toggleStartMenu();
+                    let targetUrl = app.url;
+                    if (app.rawName === 'Games') targetUrl = 'https://frogiesarcade.win';
+                    openApp(targetUrl, app.rawName, app.icon);
+                };
+                
+                let iconHtml = app.icon;
+                if (app.rawName === 'Games') {
+                    iconHtml = `<svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 10.5c-.8-.8-2.2-.8-3 0l-1.5 1.5-3-3 1.5-1.5c.8-.8.8-2.2 0-3s-2.2-.8-3 0L9.5 6 6.5 3c-.8-.8-2.2-.8-3 0s-.8 2.2 0 3l3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l1.5-1.5 3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l3-3 1.5 1.5c.8.8 2.2.8 3 0s.8-2.2 0-3l-3-3 1.5-1.5c-.8.8-.8-2.2 0-3z"/></svg>`;
+                }
 
-        function initDragAndDrop(win) {
-            const titlebar = win.querySelector('.window-titlebar');
-            if (!win || !titlebar) return;
-
-            let isDragging = false;
-            let startX, startY, initialLeft, initialTop;
-
-            titlebar.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                const rect = win.getBoundingClientRect();
-                initialLeft = rect.left;
-                initialTop = rect.top;
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onMouseUp);
-            });
-
-            function onMouseMove(e) {
-                if (!isDragging) return;
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                win.style.left = `${initialLeft + dx}px`;
-                win.style.top = `${initialTop + dy}px`;
-            }
-
-            function onMouseUp() {
-                isDragging = false;
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
-        }
-
-        function renderGamesInHub(list) {
-            const grid = document.getElementById('gamesHubGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            list.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'bg-slate-950/80 border border-white/10 rounded-2xl p-3.5 flex flex-col justify-between hover:border-blue-500 hover:bg-slate-950 transition-all cursor-pointer group shadow';
-                card.innerHTML = `
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 group-hover:bg-blue-600 group-hover:text-white flex items-center justify-center transition-colors text-base">
-                            <i class="fa-solid ${item.icon}"></i>
-                        </div>
+                item.innerHTML = `
+                    <div class="w-10 h-10 rounded-lg win-glass flex items-center justify-center text-lg shadow group-hover:scale-105 transition-all ${app.rawName === 'Games' ? 'bg-gradient-to-br from-indigo-600 to-purple-600 ring-1 ring-indigo-300' : ''}">
+                        ${iconHtml}
                     </div>
-                    <div>
-                        <h4 class="font-bold text-xs text-white truncate">${item.name}</h4>
-                        <p class="text-[10px] text-slate-400 truncate font-mono mt-0.5">${item.url}</p>
-                    </div>
-                    <div class="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px]">
-                        <span class="text-blue-400 font-bold uppercase tracking-wider group-hover:underline">Launch &rarr;</span>
-                        <span class="text-slate-500 uppercase">${item.category}</span>
-                    </div>
+                    <span class="text-[10px] text-slate-200 truncate w-full">${app.rawName}</span>
                 `;
-                card.addEventListener('click', () => {
-                    playSound('click');
-                    showNotification('Launching', `Starting ${item.name}...`);
-                    if (isStealthCloaked) openCloakedWindow(item.url);
-                    else openAppWindow('browser', item.url);
-                });
-                grid.appendChild(card);
+                startGrid.appendChild(item);
             });
         }
 
-        function filterHubGames(query) {
-            const q = query.toLowerCase();
-            const filtered = rawLinks.filter(i => i.name.toLowerCase().includes(q) || i.url.toLowerCase().includes(q) || i.category.toLowerCase().includes(q));
-            renderGamesInHub(filtered);
+        renderDesktop();
+        renderStartMenu();
+
+        function toggleStartMenu() {
+            document.getElementById('startMenu').classList.toggle('hidden');
         }
 
-        function setBg(bgVal) {
-            playSound('click');
-            document.getElementById('mainBody').style.backgroundImage = bgVal;
-            localStorage.setItem('chromebook_custom_bg', bgVal);
-            showNotification('Wallpaper', 'ChromeOS background updated.');
+        document.getElementById('startSearch').addEventListener('input', (e) => {
+            renderStartMenu(e.target.value);
+        });
+
+        let activeWinUrl = '';
+        window.openApp = function(url, title = "Microsoft Edge", icon = "🌐") {
+            activeWinUrl = url;
+            document.getElementById('winTitle').innerText = title;
+            document.getElementById('winIcon').innerText = icon === '🎮' ? '🎮' : icon;
+            document.getElementById('winUrlDisplay').innerText = url;
+            
+            const win = document.getElementById('appWindow');
+            win.classList.remove('hidden');
+            const loader = document.getElementById('winLoader');
+            loader.classList.remove('hidden');
+            
+            const frame = document.getElementById('winFrame');
+            frame.src = url;
+            frame.onload = () => loader.classList.add('hidden');
+            setTimeout(() => loader.classList.add('hidden'), 3000);
         }
 
-        function applyCustomBg() {
-            const url = document.getElementById('customBgUrlInput').value.trim();
-            if (!url) return;
-            setBg(`url('${url}')`);
+        window.closeWindow = function() {
+            document.getElementById('appWindow').classList.add('hidden');
+            document.getElementById('winFrame').src = '';
         }
 
-        const savedBg = localStorage.getItem('chromebook_custom_bg');
-        if (savedBg) document.getElementById('mainBody').style.backgroundImage = savedBg;
-
-        function openCloakedWindow(targetUrl) {
-            const win = window.open('about:blank', '_blank');
-            if (!win) return;
-            win.document.write(`
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <title>Google Classroom</title>
-                    <link rel="icon" href="https://ssl.gstatic.com/classroom/ic_product_classroom_32.png">
-                    <style>body, html { margin: 0; height: 100%; overflow: hidden; background: #000; } iframe { width: 100%; height: 100%; border: none; }</style>
-                </head>
-                <body>
-                    <iframe src="${targetUrl}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
-                </body>
-                </html>
-            `);
-            win.document.close();
+        window.minimizeWindow = function() {
+            document.getElementById('appWindow').classList.add('hidden');
         }
 
-        // Automatically open the Games Hub window on load so all 46 sites pop up instantly!
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                openAppWindow('games');
-            }, 300);
+        window.maximizeWindow = function() {
+            const win = document.getElementById('appWindow');
+            win.classList.toggle('w-full');
+            win.classList.toggle('h-full');
+            win.classList.toggle('top-0');
+            win.classList.toggle('left-0');
+            win.classList.toggle('rounded-none');
+        }
+
+        window.reloadWin = function() {
+            if (activeWinUrl) {
+                document.getElementById('winLoader').classList.remove('hidden');
+                document.getElementById('winFrame').src = activeWinUrl;
+            }
+        }
+
+        window.addEventListener('click', (e) => {
+            const menu = document.getElementById('startMenu');
+            const startBtn = e.target.closest('button');
+            if (!menu.contains(e.target) && !startBtn && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
         });
     </script>
 </body>
