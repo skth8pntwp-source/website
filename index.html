@@ -1,325 +1,500 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Windows 11 Ultimate Desktop</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D26 OS</title>
     <style>
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2560&auto=format&fit=crop') no-repeat center center fixed;
-            background-size: cover;
-            color: #f3f4f6;
-            overflow: hidden;
+        :root {
+            --glass-bg: rgba(20, 20, 20, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #fff;
+            --text-muted: #aaa;
+            --highlight: #00ffcc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
-            -webkit-user-select: none;
         }
 
-        .win-mica {
-            background: rgba(32, 32, 32, 0.85);
-            backdrop-filter: blur(40px) saturate(180%);
-            -webkit-backdrop-filter: blur(40px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #000;
+            color: var(--text-main);
         }
 
-        .win-glass {
-            background: rgba(20, 20, 20, 0.75);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        /* --- Video Background --- */
+        #bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: -1;
+            object-fit: cover;
+            pointer-events: none;
         }
 
+        /* --- Boot Sequence Styles --- */
+        #boot-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #win-logo {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+            width: 60px;
+            height: 60px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .win-square { background-color: #fff; width: 100%; height: 100%; }
+
+        #boot-text {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            text-align: left;
+            width: 100%;
+            display: none; 
+        }
+
+        #boot-logo-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        #boot-logo {
+            font-size: 150px;
+            color: #000;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: 200;
+            letter-spacing: -5px;
+        }
+
+        /* Desktop Layout */
+        #desktop {
+            position: relative;
+            width: 100%;
+            height: calc(100% - 50px);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            gap: 20px;
+        }
+
+        .desktop-icon {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            padding: 10px 5px;
+            transition: background 0.2s;
+        }
+
+        .desktop-icon:hover { background: rgba(255, 255, 255, 0.1); }
+
+        .desktop-icon img {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 5px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .desktop-icon span {
+            font-size: 12px;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        /* Center Widget */
+        .center-widget {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background: var(--glass-bg);
+            padding: 20px 40px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            width: 400px;
+        }
+
+        .widget-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .widget-close:hover { color: #ff5f56; }
+
+        .center-widget h1 { font-size: 48px; font-weight: 300; margin-bottom: 5px; }
+        .center-widget p { color: var(--text-muted); font-size: 14px; margin-bottom: 15px; }
+
+        /* Window System */
+        .window {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            max-width: 900px;
+            height: 70%;
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            overflow: hidden;
+            z-index: 100;
+        }
+
+        .window.active { display: flex; }
+
+        .window-header {
+            background: rgba(42, 42, 42, 0.8);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+
+        .window-controls span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+
+        .btn-close { background: #ff5f56; }
+        .btn-min { background: #ffbd2e; }
+        .btn-max { background: #27c93f; }
+
+        .window-content { padding: 20px; overflow-y: auto; flex-grow: 1; display: flex; flex-direction: column; }
+
+        /* Iframe Specific Window Overrides */
+        #iframe-window .window-content { padding: 0; }
+        #browser-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #fff;
+        }
+
+        /* Game Grid */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .game-card {
+            background: rgba(42, 42, 42, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: white;
+            font-size: 11px;
+            transition: transform 0.2s, background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+            word-break: break-all;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .game-card:hover {
+            transform: translateY(-3px);
+            background: var(--highlight);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Taskbar */
         .taskbar {
-            background: rgba(24, 24, 24, 0.88);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
         }
 
-        @keyframes windowOpen {
-            0% { transform: scale(0.92) translateY(15px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
+        .taskbar-left, .taskbar-right { display: flex; align-items: center; gap: 15px; font-size: 14px; }
+        .taskbar-icons { display: flex; gap: 10px; }
+        .taskbar-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .window-animate {
-            animation: windowOpen 0.25s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.4);
-        }
+        .taskbar-icon:hover { background: rgba(255, 255, 255, 0.3); }
     </style>
 </head>
-<body class="h-full flex flex-col justify-between relative">
+<body>
 
-    <div id="lockScreen" class="absolute inset-0 z-50 bg-cover bg-center flex flex-col justify-between p-12 transition-all duration-700" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2560&auto=format&fit=crop')">
-        <div class="flex flex-col items-center mt-16 text-center">
-            <h1 id="lockClock" class="text-8xl font-light text-white tracking-tighter drop-shadow-lg">9:41</h1>
-            <p id="lockDate" class="text-xl font-medium text-white/90 mt-2 drop-shadow">Saturday, October 3</p>
+    <!-- VIDEO BACKGROUND -->
+    <video autoplay loop muted playsinline id="bg-video">
+        <source src="https://raw.githubusercontent.com/skth8pntwp-source/Wallpaper/main/wallpaper.mp4" type="video/mp4">
+    </video>
+
+    <!-- BOOT SEQUENCE OVERLAY -->
+    <div id="boot-screen">
+        <div id="win-logo">
+            <div class="win-square"></div>
+            <div class="win-square"></div>
+            <div class="win-square"></div>
+            <div class="win-square"></div>
         </div>
-
-        <div id="loginPrompt" class="flex flex-col items-center mb-24 cursor-pointer group" onclick="showPasswordInput()">
-            <div class="w-28 h-28 rounded-full border-2 border-white/40 overflow-hidden shadow-2xl mb-4 group-hover:scale-105 transition-all bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center text-4xl">
-                👤
-            </div>
-            <h3 class="text-xl font-semibold text-white drop-shadow">Administrator</h3>
-            <p class="text-xs text-white/70 mt-1">Click to sign in (Password: peanut or 0290)</p>
-        </div>
-
-        <div id="passwordInputBox" class="hidden flex flex-col items-center mb-24">
-            <div class="w-24 h-24 rounded-full border-2 border-white/40 overflow-hidden shadow-2xl mb-4 bg-gradient-to-tr from-blue-600 to-indigo-700 flex items-center justify-center text-3xl">
-                👤
-            </div>
-            <h3 class="text-lg font-semibold text-white mb-3">Administrator</h3>
-            <form onsubmit="handleLogin(event)" class="flex items-center gap-2">
-                <input type="password" id="passInput" placeholder="Password (peanut / 0290)" autofocus
-                    class="bg-black/50 border border-white/30 rounded-md px-4 py-2 text-sm text-white placeholder-white/50 focus:outline-none focus:border-blue-500 backdrop-blur-md w-64 shadow-inner">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium shadow-md transition-all">→</button>
-            </form>
-            <p id="loginError" class="text-xs text-rose-400 mt-2 h-4"></p>
-        </div>
-
-        <div class="flex justify-between items-center text-xs text-white/80">
-            <span>Windows 11 Enterprise</span>
-            <div class="flex items-center gap-4">
-                <span>📶 Connected</span>
-                <span>🔋 100%</span>
-            </div>
+        <div id="boot-text"></div>
+        <div id="boot-logo-container">
+            <h1 id="boot-logo">D</h1>
         </div>
     </div>
 
-    <main id="desktop" class="flex-grow relative p-4 grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 gap-6 overflow-hidden z-10 content-start">
-        <!-- Only clean essential icons on desktop (Games & Edge) -->
-    </main>
-
-    <div id="startMenu" class="absolute bottom-16 left-1/2 -translate-x-1/2 w-[620px] h-[560px] win-mica rounded-2xl shadow-2xl z-40 hidden flex flex-col p-6 border border-white/15">
-        <div class="relative mb-6">
-            <span class="absolute left-3.5 top-3 text-slate-400 text-sm">🔍</span>
-            <input type="text" id="startSearch" placeholder="Search full game & proxy library..." 
-                class="w-full bg-black/40 border border-white/15 rounded-lg py-2.5 pl-10 pr-4 text-xs text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 shadow-inner">
+    <!-- MAIN OS DESKTOP -->
+    <div id="desktop">
+        <div class="desktop-icon" onclick="openWindow('library-window')">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%2300ffcc' viewBox='0 0 24 24'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/></svg>" alt="Library">
+            <span>D26 Library</span>
+        </div>
+        <!-- Toggle Widget Icon -->
+        <div class="desktop-icon" onclick="toggleWidget()">
+            <img src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%23aaa' viewBox='0 0 24 24'><path d='M4 4h16v16H4V4zm-2 0a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4zm10 4v8h-4V8h4zm6 0v8h-4V8h4z'/></svg>" alt="Widget">
+            <span>Toggle Log</span>
         </div>
 
-        <div class="flex justify-between items-center mb-3">
-            <span class="text-xs font-semibold text-slate-200">All Apps & Game Portals</span>
-            <span id="appCount" class="text-[11px] text-blue-400"></span>
-        </div>
-
-        <div id="startGrid" class="grid grid-cols-5 gap-3 overflow-y-auto max-h-[360px] pr-2">
-            <!-- Populated via script -->
-        </div>
-
-        <div class="mt-auto pt-4 border-t border-white/10 flex justify-between items-center text-xs">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">A</div>
-                <span class="font-medium">Administrator</span>
-            </div>
-            <button onclick="lockDesktop()" class="p-2 hover:bg-white/10 rounded-lg text-rose-400" title="Lock">🔒</button>
+        <div class="center-widget" id="main-widget">
+            <span class="widget-close" onclick="toggleWidget()">✕</span>
+            <h1 id="clock">12:00 PM</h1>
+            <p>Battery API not supported.</p>
+            <h3>D26 Updates</h3>
+            <p style="margin-top: 10px;">Version 1.1<br>Iframe container integration active.</p>
         </div>
     </div>
 
-    <div id="appWindow" class="absolute top-12 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl h-[84%] win-mica rounded-xl shadow-2xl z-30 hidden flex flex-col border border-white/20 window-animate overflow-hidden">
-        <div class="bg-[#181818] px-4 py-2.5 flex items-center justify-between border-b border-white/10 select-none cursor-move" id="windowHeader">
-            <div class="flex items-center gap-3">
-                <span id="winIcon" class="text-sm">🌐</span>
-                <span id="winTitle" class="text-xs font-medium text-slate-200">Microsoft Edge</span>
-            </div>
-            <div class="flex items-center gap-1">
-                <button onclick="minimizeWindow()" class="w-8 h-8 hover:bg-white/10 rounded flex items-center justify-center text-xs text-slate-300">🗕</button>
-                <button onclick="maximizeWindow()" class="w-8 h-8 hover:bg-white/10 rounded flex items-center justify-center text-xs text-slate-300">🗖</button>
-                <button onclick="closeWindow()" class="w-8 h-8 hover:bg-rose-600 rounded flex items-center justify-center text-xs text-slate-300">✕</button>
+    <!-- D26 Library Window -->
+    <div id="library-window" class="window">
+        <div class="window-header">
+            <span style="font-weight: bold;">Games & Proxies - D26</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('library-window')"></span>
+                <span class="btn-max"></span>
+                <span class="btn-close" onclick="closeWindow('library-window')"></span>
             </div>
         </div>
-
-        <div class="bg-[#202020] px-4 py-2 flex items-center gap-3 border-b border-white/10">
-            <div class="flex items-center gap-1">
-                <button class="p-1.5 hover:bg-white/10 rounded text-slate-400 text-xs">←</button>
-                <button class="p-1.5 hover:bg-white/10 rounded text-slate-400 text-xs">→</button>
-                <button onclick="reloadWin()" class="p-1.5 hover:bg-white/10 rounded text-slate-400 text-xs">🔄</button>
-            </div>
-            <div class="flex-grow bg-black/40 border border-white/10 rounded-full px-4 py-1 text-xs text-slate-300 flex items-center gap-2">
-                <span class="text-emerald-400">🔒</span>
-                <span id="winUrlDisplay" class="truncate">https://...</span>
-            </div>
-        </div>
-
-        <div class="flex-grow relative bg-white w-full h-full">
-            <div id="winLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-zinc-900 z-10 gap-3">
-                <div class="w-8 h-8 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-xs text-slate-400">Loading secure proxy tunnel...</p>
-            </div>
-            <iframe id="winFrame" src="" class="w-full h-full border-0" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
+        <div class="window-content">
+            <div class="game-grid" id="link-container"></div>
         </div>
     </div>
 
-    <footer class="taskbar h-12 w-full flex items-center justify-between px-4 z-40 select-none">
-        <div class="flex items-center gap-2">
-            <button onclick="toggleStartMenu()" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center transition-all">
-                <svg class="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
-            </button>
-            <button onclick="toggleStartMenu()" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center text-lg" title="Search">🔍</button>
-        </div>
-
-        <div class="flex items-center gap-1">
-            <button onclick="toggleStartMenu()" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center text-xl transition-all" title="Start">❖</button>
-            <button onclick="openApp('https://duckduckgo.com', 'Microsoft Edge', '🌐')" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center text-xl transition-all relative" title="Edge Browser">
-                🌐
-                <div class="absolute bottom-0.5 w-1.5 h-1.5 bg-blue-400 rounded-full"></div>
-            </button>
-            <button onclick="openApp('https://frogiesarcade.win', 'Games Hub', '🎮')" class="w-10 h-10 hover:bg-white/10 rounded-lg flex items-center justify-center transition-all relative" title="Games Hub">
-                <svg class="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 10.5c-.8-.8-2.2-.8-3 0l-1.5 1.5-3-3 1.5-1.5c.8-.8.8-2.2 0-3s-2.2-.8-3 0L9.5 6 6.5 3c-.8-.8-2.2-.8-3 0s-.8 2.2 0 3l3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l1.5-1.5 3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l3-3 1.5 1.5c.8.8 2.2.8 3 0s.8-2.2 0-3l-3-3 1.5-1.5c.8-.8-.8-2.2 0-3z"/></svg>
-            </button>
-        </div>
-
-        <div class="flex items-center gap-3 text-xs text-slate-300 px-2 py-1 hover:bg-white/10 rounded-lg cursor-pointer">
-            <div class="flex flex-col items-end">
-                <span id="taskTime" class="font-medium">9:41 AM</span>
-                <span id="taskDate" class="text-[10px] text-slate-400">10/3/2026</span>
+    <!-- Iframe Container Window -->
+    <div id="iframe-window" class="window" style="width: 85%; height: 80%;">
+        <div class="window-header">
+            <span id="iframe-title" style="font-weight: bold;">Browser View</span>
+            <div class="window-controls">
+                <span class="btn-min" onclick="closeWindow('iframe-window')"></span>
+                <span class="btn-max"></span>
+                <span class="btn-close" onclick="closeWindow('iframe-window')"></span>
             </div>
         </div>
-    </footer>
+        <div class="window-content">
+            <iframe id="browser-frame" src=""></iframe>
+        </div>
+    </div>
+
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <div class="taskbar-left">
+            <span style="font-weight: bold; color: var(--highlight);">D26 OS</span>
+            <div class="taskbar-icons">
+                <div class="taskbar-icon" onclick="openWindow('library-window')">🎮</div>
+            </div>
+        </div>
+        <div class="taskbar-right">
+            <span id="fps-counter">FPS: 60</span>
+        </div>
+    </div>
 
     <script>
-        function updateClock() {
-            const now = new Date();
-            let hours = now.getHours();
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            const ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12;
-            
-            document.getElementById('taskTime').innerText = `${hours}:${minutes} ${ampm}`;
-            document.getElementById('taskDate').innerText = now.toLocaleDateString();
-            document.getElementById('lockClock').innerText = `${hours}:${minutes}`;
-            
-            const options = { weekday: 'long', month: 'long', day: 'numeric' };
-            document.getElementById('lockDate').innerText = now.toLocaleDateString('en-US', options);
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+        // --- 1. Boot Sequence Logic ---
+        const bootCode = `struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
+struct group_info *groups_alloc(int gidsetsize){
+    struct group_info *group_info;
+    int`;
 
-        function showPasswordInput() {
-            document.getElementById('loginPrompt').classList.add('hidden');
-            document.getElementById('passwordInputBox').classList.remove('hidden');
-            document.getElementById('passInput').focus();
+        const winLogoEl = document.getElementById('win-logo');
+        const bootTextEl = document.getElementById('boot-text');
+        const bootLogoCont = document.getElementById('boot-logo-container');
+        const bootScreen = document.getElementById('boot-screen');
+        let typeIndex = 0;
+
+        function startBootSequence() {
+            setTimeout(() => {
+                winLogoEl.style.display = 'none';
+                bootTextEl.style.display = 'block';
+                typeBootCode();
+            }, 1500);
         }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const val = document.getElementById('passInput').value;
-            if (val === 'peanut' || val === '0290') {
-                const lock = document.getElementById('lockScreen');
-                lock.style.opacity = '0';
-                setTimeout(() => lock.style.display = 'none', 700);
+        function typeBootCode() {
+            if (typeIndex < bootCode.length) {
+                bootTextEl.textContent += bootCode.charAt(typeIndex);
+                typeIndex++;
+                setTimeout(typeBootCode, 15); 
             } else {
-                document.getElementById('loginError').innerText = "Incorrect password. Try peanut or 0290";
-                document.getElementById('passInput').value = "";
+                setTimeout(showBootLogo, 600); 
             }
         }
 
-        function lockDesktop() {
-            const lock = document.getElementById('lockScreen');
-            lock.style.display = 'flex';
-            setTimeout(() => lock.style.opacity = '1', 50);
-            document.getElementById('passwordInputBox').classList.add('hidden');
-            document.getElementById('loginPrompt').classList.remove('hidden');
-            document.getElementById('startMenu').classList.add('hidden');
+        function showBootLogo() {
+            bootTextEl.style.display = 'none'; 
+            bootLogoCont.style.opacity = '1';  
+            
+            setTimeout(() => {
+                bootLogoCont.style.opacity = '0'; 
+                setTimeout(() => {
+                    bootScreen.style.opacity = '0'; 
+                    setTimeout(() => {
+                        bootScreen.style.display = 'none'; 
+                    }, 800);
+                }, 500);
+            }, 1800); 
         }
 
-        // Complete user library list
-        const rawLinks = [
-            "Games",
-            "Calcsolver.net",
-            "Calcsolver.com",
-            "Mathcheck.net",
-            "Solvecalc.net",
-            "https://calcsolverpro.com",
-            "https://figurestand.workerlo.workers.dev",
-            "bit.ly/nexlinkfinder",
-            "https://storage.googleapis.com/opiumbest/index.html",
-            "https://ghostproxy.anonymoose.workers.dev/",
-            "https://nocturne.lol/",
-            "https://cdn.jsdelivr.net/gh/lucideproxy/svg@latest/logo.svg",
-            "https://blooooket.vercel.app",
-            "https://galxy.it.com/",
-            "https://helium-on.top/",
-            "https://duckmath.org/",
-            "https://mizumath.com/",
-            "https://sites.google.com/view/d3ltahubgames/home",
-            "https://t9-is-the-goat.netlify.app/class.html",
-            "https://d1xzx4vznne13n.cloudfront.net/",
-            "https://studysync.co.uk",
-            "https://cdn.jsdelivr.net/gh/lolhahusuckxj/Chud/games.svg",
-            "https://menist.free.nf/?i=1",
-            "Calc.cyclopsproject.eu",
-            "https://sites.google.com/view/vecta-unblocked/-_1",
-            "https://pirettisports.com/",
-            "https://algebra.khastat.org",
-            "https://frogiesarcade.win",
-            "https://math.leaning.cfd",
-            "https://docs.unblinternetuniversity.workers.dev",
-            "question.gorich.hk",
-            "blue.monkey.majoitus.ee",
-            "s3.amazonaws.com",
-            "they.misem.or.id",
-            "https://bull.chanka.com",
-            "https://class.ryanjlowe.us",
-            "https://education.schoolcity.cc",
-            "https://catz.touchgrassnow.org/",
-            "https://uraniumsite.t20988828.workers.dev/",
-            "https://c00lkiddtech.live/",
-            "https://yukios.netlify.app/",
-            "https://vps-d38e82a1.vps.ovh.us/",
-            "https://xylora.org/",
-            "https://a21ae49a9f4a.surge.sh/index.svg",
-            "https://petezahgames.com/",
-            "https://tt.bookworm.com.np",
-            "https://brainworxedu.github.io/classes.html",
-            "space.colegioitalocomposto.cl",
-            "https://fluxv3-sooty.vercel.app/",
-            "https://endis.rest",
-            "https://ajhsvault.org",
-            "https://endis.college",
-            "https://practice.rest",
-            "https://monoxide.dev/",
-            "https://veterans4education.org/",
-            "https://donutshop.vip/",
-            "https://sealsarcade.xyz",
-            "https://mathlearn.nya.je",
-            "https://kahoot.undo.it",
-            "https://mathnotes.ne-t.org",
-            "https://aphistory.ra3.us",
-            "https://classroom.xn--ds-bja.info",
-            "https://schoology.clienturl.net",
-            "https://lost.dstand.com.au",
-            "https://ixl-learn.jakesthoughts.xyz",
-            "https://happylearn.port82.net",
-            "https://science-courses.xn--72cg7bdd3bro6b3ab9c8btw4x.com",
-            "https://ixl.ldtp.com",
-            "https://quizlet.lozan.com",
-            "https://yo-scan-this.qr-code.co.za",
-            "https://canvas.instructure.rkfd.com",
-            "https://1.2.3.tokes.ro",
-            "https://mathresources.dx4.uk",
-            "https://banana.ctx.cl",
-            "https://banana.ftp.sh",
-            "https://banana.jakesthoughts.xyz",
-            "https://banana.privatedns.org",
-            "https://banana.rkfd.com",
+        window.onload = startBootSequence;
+
+        // --- 2. Clock Logic ---
+        function updateTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; 
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            document.getElementById('clock').textContent = hours + ':' + minutes + ' ' + ampm;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // --- 3. Widget Toggle Logic ---
+        function toggleWidget() {
+            const widget = document.getElementById('main-widget');
+            widget.style.display = widget.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // --- 4. Window Management ---
+        function openWindow(id) { document.getElementById(id).classList.add('active'); }
+        function closeWindow(id) { 
+            document.getElementById(id).classList.remove('active');
+            if (id === 'iframe-window') {
+                document.getElementById('browser-frame').src = ''; // Clear iframe when closed
+            }
+        }
+
+        function launchInIframe(url, name) {
+            document.getElementById('iframe-title').textContent = name;
+            document.getElementById('browser-frame').src = url;
+            openWindow('iframe-window');
+        }
+
+        // --- 5. Populate Complete Link Library ---
+        const proxyLinks = [
+            "Calcsolver.net", "Calcsolver.com", "Mathcheck.net", "Solvecalc.net",
+            "https://calcsolverpro.com", "https://figurestand.workerlo.workers.dev",
+            "bit.ly/nexlinkfinder", "https://storage.googleapis.com/opiumbest/index.html",
+            "https://ghostproxy.anonymoose.workers.dev/", "https://nocturne.lol/",
+            "https://cdn.jsdelivr.net/gh/lucideproxy/svg@latest/logo.svg", "https://galxy.it.com/",
+            "https://helium-on.top/", "https://duckmath.org/", "https://mizumath.com/",
+            "https://sites.google.com/view/d3ltahubgames/home", "https://t9-is-the-goat.netlify.app/class.html",
+            "https://d1xzx4vznne13n.cloudfront.net/", "https://studysync.co.uk",
+            "https://cdn.jsdelivr.net/gh/lolhahusuckxj/Chud/games.svg", "https://menist.free.nf/?i=1",
+            "Calc.cyclopsproject.eu", "https://sites.google.com/view/vecta-unblocked/-_1",
+            "https://pirettisports.com/", "https://algebra.khastat.org", "https://frogiesarcade.win",
+            "https://math.leaning.cfd", "https://docs.unblinternetuniversity.workers.dev",
+            "question.gorich.hk", "blue.monkey.majoitus.ee", "s3.amazonaws.com", "they.misem.or.id",
+            "https://bull.chanka.com", "https://class.ryanjlowe.us", "https://education.schoolcity.cc",
+            "https://catz.touchgrassnow.org/", "https://uraniumsite.t20988828.workers.dev/",
+            "https://c00lkiddtech.live/", "https://yukios.netlify.app/", "https://vps-d38e82a1.vps.ovh.us/",
+            "https://xylora.org/", "https://a21ae49a9f4a.surge.sh/index.svg", "https://petezahgames.com/",
+            "https://tt.bookworm.com.np", "https://brainworxedu.github.io/classes.html",
+            "space.colegioitalocomposto.cl", "https://fluxv3-sooty.vercel.app/", "https://endis.rest",
+            "https://ajhsvault.org", "https://endis.college", "https://practice.rest",
+            "https://monoxide.dev/", "https://veterans4education.org/", "https://donutshop.vip/",
+            "https://sealsarcade.xyz", "https://mathlearn.nya.je", "https://kahoot.undo.it",
+            "https://mathnotes.ne-t.org", "https://aphistory.ra3.us", "https://classroom.xn--ds-bja.info",
+            "https://schoology.clienturl.net", "https://lost.dstand.com.au", "https://ixl-learn.jakesthoughts.xyz",
+            "https://happylearn.port82.net", "https://science-courses.xn--72cg7bdd3bro6b3ab9c8btw4x.com",
+            "https://ixl.ldtp.com", "https://quizlet.lozan.com", "https://yo-scan-this.qr-code.co.za",
+            "https://canvas.instructure.rkfd.com", "https://1.2.3.tokes.ro", "https://mathresources.dx4.uk",
+            "https://banana.ctx.cl", "https://banana.ftp.sh", "https://banana.jakesthoughts.xyz",
+            "https://banana.privatedns.org", "https://banana.rkfd.com",
             "https://educationate2026.s3.us-east-2.amazonaws.com/index.html",
-            "https://geometry-302267745.b-cdn.net/",
-            "https://science-411069385.b-cdn.net/",
+            "https://geometry-302267745.b-cdn.net/", "https://science-411069385.b-cdn.net/",
             "https://science-861197723.b-cdn.net",
             "https://raw.githubusercontent.com/seattleschools/media/main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
             "https://cdn.jsdelivr.net/gh/seattleschools/media@main/batch/originallyut/20260916190251/8e0c800f63d8f5ce.svg",
@@ -391,155 +566,37 @@
             "https://rawcdn.githack.com/seattleschools/media/main/batch/originallyut/20260916190251/dbbac7f8fede1769.svg"
         ];
 
-        const apps = rawLinks.map((entry, index) => {
-            let url = entry.trim();
-            if (url === 'Games') url = '#';
-            else if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+        const container = document.getElementById('link-container');
+        
+        proxyLinks.forEach((link, index) => {
+            const card = document.createElement('div');
+            let href = link.trim();
+            if (!href.startsWith('http') && !href.startsWith('bit.ly') && !href.includes('://')) {
+                href = 'https://' + href;
+            } else if (href.startsWith('bit.ly')) {
+                href = 'https://' + href;
+            }
             
-            let name = entry;
-            try {
-                if (url !== '#') {
-                    name = new URL(url).hostname.replace('www.', '');
-                }
-            } catch (e) {
-                name = entry;
+            card.className = "game-card";
+            
+            let displayName = link.replace('https://', '').replace('http://', '').split('/')[0];
+            if (displayName.includes('seattleschools') || displayName.includes('jsdelivr') || displayName.length > 22) {
+                displayName = "Proxy Node " + (index + 1);
             }
+            card.textContent = displayName;
+            
+            // Open via iframe instead of new tab
+            card.onclick = () => {
+                launchInIframe(href, displayName);
+            };
 
-            let icon = "🛡️";
-            const lower = entry.toLowerCase();
-
-            if (entry === 'Games') {
-                icon = "🎮";
-            } else if (lower.includes('calc') || lower.includes('math') || lower.includes('algebra') || lower.includes('geometry')) {
-                icon = "🔢";
-            } else if (lower.includes('game') || lower.includes('arcade') || lower.includes('hub') || lower.includes('frogie') || lower.includes('blooo') || lower.includes('seal') || lower.includes('petezah')) {
-                icon = "🎮";
-            } else if (lower.includes('study') || lower.includes('school') || lower.includes('quizlet') || lower.includes('canvas') || lower.includes('schoology') || lower.includes('ixl') || lower.includes('class')) {
-                icon = "📚";
-            } else if (lower.endsWith('.svg') || lower.includes('/svg')) {
-                icon = "🖼️";
-            }
-
-            return { id: index, name: name, rawName: entry, url: url, icon: icon };
+            container.appendChild(card);
         });
 
-        // Prioritize Games app first
-        apps.sort((a, b) => {
-            if (a.rawName === 'Games') return -1;
-            if (b.rawName === 'Games') return 1;
-            return 0;
-        });
-
-        // Render clean desktop (Only Games icon on desktop)
-        const desktop = document.getElementById('desktop');
-        function renderDesktop() {
-            desktop.innerHTML = '';
-            const gamesApp = apps.find(a => a.rawName === 'Games') || apps[0];
-            
-            const item = document.createElement('div');
-            item.className = "flex flex-col items-center gap-1.5 p-2 rounded-lg hover:bg-white/10 cursor-pointer group text-center w-20";
-            item.onclick = () => openApp('https://frogiesarcade.win', 'Games & Arcades', '🎮');
-            item.innerHTML = `
-                <div class="w-12 h-12 rounded-xl win-glass flex items-center justify-center text-2xl shadow-md group-hover:scale-105 transition-all bg-gradient-to-br from-indigo-600/80 to-purple-700/80 ring-2 ring-indigo-400">
-                    <svg class="w-7 h-7 text-white drop-shadow" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 10.5c-.8-.8-2.2-.8-3 0l-1.5 1.5-3-3 1.5-1.5c.8-.8.8-2.2 0-3s-2.2-.8-3 0L9.5 6 6.5 3c-.8-.8-2.2-.8-3 0s-.8 2.2 0 3l3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l1.5-1.5 3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l3-3 1.5 1.5c.8.8 2.2.8 3 0s.8-2.2 0-3l-3-3 1.5-1.5c-.8.8-.8-2.2 0-3z"/></svg>
-                </div>
-                <span class="text-[11px] text-white font-medium truncate w-full drop-shadow">Games</span>
-            `;
-            desktop.appendChild(item);
-        }
-
-        const startGrid = document.getElementById('startGrid');
-        function renderStartMenu(filter = '') {
-            startGrid.innerHTML = '';
-            const filtered = apps.filter(a => a.name.toLowerCase().includes(filter.toLowerCase()) || a.rawName.toLowerCase().includes(filter.toLowerCase()));
-            document.getElementById('appCount').innerText = `${filtered.length} items`;
-            
-            filtered.forEach(app => {
-                const item = document.createElement('div');
-                item.className = "flex flex-col items-center justify-center gap-1 p-2.5 rounded-lg hover:bg-white/10 cursor-pointer text-center group";
-                item.onclick = () => {
-                    toggleStartMenu();
-                    let targetUrl = app.url;
-                    if (app.rawName === 'Games') targetUrl = 'https://frogiesarcade.win';
-                    openApp(targetUrl, app.rawName, app.icon);
-                };
-                
-                let iconHtml = app.icon;
-                if (app.rawName === 'Games') {
-                    iconHtml = `<svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M21.5 10.5c-.8-.8-2.2-.8-3 0l-1.5 1.5-3-3 1.5-1.5c.8-.8.8-2.2 0-3s-2.2-.8-3 0L9.5 6 6.5 3c-.8-.8-2.2-.8-3 0s-.8 2.2 0 3l3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l1.5-1.5 3 3-1.5 1.5c-.8.8-.8 2.2 0 3s2.2.8 3 0l3-3 1.5 1.5c.8.8 2.2.8 3 0s.8-2.2 0-3l-3-3 1.5-1.5c-.8.8-.8-2.2 0-3z"/></svg>`;
-                }
-
-                item.innerHTML = `
-                    <div class="w-10 h-10 rounded-lg win-glass flex items-center justify-center text-lg shadow group-hover:scale-105 transition-all ${app.rawName === 'Games' ? 'bg-gradient-to-br from-indigo-600 to-purple-600 ring-1 ring-indigo-300' : ''}">
-                        ${iconHtml}
-                    </div>
-                    <span class="text-[10px] text-slate-200 truncate w-full">${app.rawName}</span>
-                `;
-                startGrid.appendChild(item);
-            });
-        }
-
-        renderDesktop();
-        renderStartMenu();
-
-        function toggleStartMenu() {
-            document.getElementById('startMenu').classList.toggle('hidden');
-        }
-
-        document.getElementById('startSearch').addEventListener('input', (e) => {
-            renderStartMenu(e.target.value);
-        });
-
-        let activeWinUrl = '';
-        window.openApp = function(url, title = "Microsoft Edge", icon = "🌐") {
-            activeWinUrl = url;
-            document.getElementById('winTitle').innerText = title;
-            document.getElementById('winIcon').innerText = icon === '🎮' ? '🎮' : icon;
-            document.getElementById('winUrlDisplay').innerText = url;
-            
-            const win = document.getElementById('appWindow');
-            win.classList.remove('hidden');
-            const loader = document.getElementById('winLoader');
-            loader.classList.remove('hidden');
-            
-            const frame = document.getElementById('winFrame');
-            frame.src = url;
-            frame.onload = () => loader.classList.add('hidden');
-            setTimeout(() => loader.classList.add('hidden'), 3000);
-        }
-
-        window.closeWindow = function() {
-            document.getElementById('appWindow').classList.add('hidden');
-            document.getElementById('winFrame').src = '';
-        }
-
-        window.minimizeWindow = function() {
-            document.getElementById('appWindow').classList.add('hidden');
-        }
-
-        window.maximizeWindow = function() {
-            const win = document.getElementById('appWindow');
-            win.classList.toggle('w-full');
-            win.classList.toggle('h-full');
-            win.classList.toggle('top-0');
-            win.classList.toggle('left-0');
-            win.classList.toggle('rounded-none');
-        }
-
-        window.reloadWin = function() {
-            if (activeWinUrl) {
-                document.getElementById('winLoader').classList.remove('hidden');
-                document.getElementById('winFrame').src = activeWinUrl;
-            }
-        }
-
-        window.addEventListener('click', (e) => {
-            const menu = document.getElementById('startMenu');
-            const startBtn = e.target.closest('button');
-            if (!menu.contains(e.target) && !startBtn && !menu.classList.contains('hidden')) {
-                menu.classList.add('hidden');
-            }
-        });
+        // --- 6. Mock FPS Counter ---
+        setInterval(() => {
+            document.getElementById('fps-counter').textContent = 'FPS: ' + (Math.floor(Math.random() * (62 - 58 + 1)) + 58);
+        }, 1000);
     </script>
 </body>
 </html>
